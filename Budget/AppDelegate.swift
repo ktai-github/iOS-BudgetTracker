@@ -21,5 +21,32 @@ import UIKit
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
   var window: UIWindow?
+  
+  func applicationDidFinishLaunching(_ application: UIApplication) {
+    let database = DataManager()
+    database.openDatabase()
+    database.initialSetup()
+    
+    //    let database = SQLiteDatabase()
+//    try? database.openDatabase(name: "test-database.db")
+//    try? database.execute(simpleQuery: """
+//      CREATE TABLE "users" (
+//          id INTEGER PRIMARY KEY NOT NULL,
+//          name TEXT,
+//          email TEXT NOT NULL UNIQUE
+//      );
+//      """)
+//    try? database.execute(simpleQuery: """
+//        INSERT INTO users (name, email)
+//        VALUES ('Larry', 'larry@lighthouselabs.com'),
+//        ('Madam Brexit', 'theresa-mary-@netscape.net'),
+//        ('Trumpty Dumpty', 'the-trump@whitehouse.gov'),
+//        ('President Yeezy', 'yeezus@kanyewest.com');
+//      """)
+//    let users = try? database.execute(complexQuery: "SELECT * from users")
+//    for user in users! {
+//      print(user)
+//    }
+  }
 }
 

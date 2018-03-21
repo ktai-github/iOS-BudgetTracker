@@ -28,6 +28,8 @@ class TransactionViewControllerclass: UIViewController {
   
   override func viewDidLoad() {
     super.viewDidLoad()
+    dataManager.openDatabase()
+
     updateRemainingLabel()
   }
   

@@ -17,18 +17,108 @@
 // THE SOFTWARE.
 
 import UIKit
+import SQLite3
 
 class DataManager: NSObject {
 
   let dailyBudget = NSDecimalNumber(string: "10.00")
   var spent = NSDecimalNumber(string: "0.00")
   
+  var database: OpaquePointer?
+  
+  func openDatabase() {
+    let fileURL = try! FileManager.default.url(for: .documentDirectory, in: .userDomainMask,
+                                               appropriateFor: nil, create: false)
+      .appendingPathComponent("test-database.db")
+    let status = sqlite3_open(fileURL.path, &database)
+    if status != SQLITE_OK {
+      print("error opening")
+    }
+  }
+  
   func budgetRemainingToday() -> NSDecimalNumber {
+    let startOfDay = NSCalendar.current.startOfDay(for: Date())
+    
+    var components = DateComponents()
+    components.day = 1
+    components.second = -1
+    
     return dailyBudget.subtracting(spent)
   }
   
   func spend(amount: NSDecimalNumber, time: Date) {
+    let timeString = String(Int(Date().timeIntervalSince1970))
+    let amountString = String(describing: amount.multiplying(by: 100.00))
+    let query = """
+      INSERT INTO transactions (amount, timestamp)
+      VALUES(
+      """
+      + amountString + """
+      ,
+      """
+      + timeString + """
+      );
+      """
+//    let database = SQLiteDatabase()
+    let status = sqlite3_exec(database, query, nil, nil, nil)
+    if status != SQLITE_OK {
+      let errmsg = String(cString: sqlite3_errmsg(database)!)
+      print("error \(errmsg)")
+    }
     spent = spent.adding(amount)
   }
   
+  func initialSetup() {
+    let query = """
+      CREATE TABLE "transactions" (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          amount INTEGER,
+          timestamp INTEGER
+      );
+      CREATE TABLE "daily_budgets" (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          amount INTEGER
+      );
+      """
+//    let database = SQLiteDatabase()
+    let status = sqlite3_exec(database, query, nil, nil, nil)
+    if status != SQLITE_OK {
+      let errmsg = String(cString: sqlite3_errmsg(database)!)
+      print("error \(errmsg)")
+    }
+
+//    let createPeople = """
+//      CREATE TABLE famous_people (
+//      id INTEGER PRIMARY KEY,
+//      first_name VARCHAR(50),
+//      last_name VARCHAR(50),
+//      birthdate DATE
+//      );
+//      INSERT INTO famous_people (first_name, last_name, birthdate)
+//      VALUES ('Abraham', 'Lincoln', '1809-02-12'
+//      );
+//      INSERT INTO famous_people (first_name, last_name, birthdate)
+//      VALUES ('Mahatma', 'Gandhi', '1869-10-02'
+//      );
+//      """
+//
+//    let status = sqlite3_exec(database, createPeople, nil, nil, nil)
+//    if status != SQLITE_OK {
+//      let errmsg = String(cString: sqlite3_errmsg(database)!)
+//      print("error \(errmsg)")
+//    }
+
+  }
+  
+  func closeDatabase() {
+    let status = sqlite3_close(database)
+    if status != SQLITE_OK {
+      print("error closing")
+    }
+  }
+
+  
+  deinit {
+    closeDatabase()
+  }
 }
