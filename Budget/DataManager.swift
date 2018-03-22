@@ -43,21 +43,54 @@ class DataManager: NSObject {
     components.day = 1
     components.second = -1
     
+    let endOfDay = NSCalendar.current.date(byAdding: components, to: startOfDay)
+    
+//    let spent =
+//    let remaining = dailyBudget.subtracting(spent)
     return dailyBudget.subtracting(spent)
   }
   
+  func sumAmountSpentToday() {
+////    let timeString = String(Int(Date().timeIntervalSince1970))
+////    let amountString = String(describing: amount.multiplying(by: 100.00))
+    let query = """
+      SELECT SUM(amount)
+      FROM transactions
+      WHERE timestamp > current_date
+      );
+    """
+    let sqliteDatabase = SQLiteDatabase()
+    let sumSpentTodayArray = try! sqliteDatabase.execute(complexQuery: query)
+    print(sumSpentTodayArray)
+//    var queryStatement: OpaquePointer? = nil
+//    let prepareStatus = sqlite3_prepare_v2(database, query, -1, &queryStatement, nil)
+//
+//    guard prepareStatus == SQLITE_OK else {
+//      let errmsg = String(cString: sqlite3_errmsg(database)!)
+//      print("prepare error: \(errmsg)")
+//      return 0
+//    }
+//
+//    var stepStatus = sqlite3_step(queryStatement)
+////    let numberOfColumns = sqlite3_column_count(queryStatement)
+//
+//    var sumAmount = sqlite3_exec(<#T##OpaquePointer!#>, <#T##sql: UnsafePointer<Int8>!##UnsafePointer<Int8>!#>, <#T##callback: ((UnsafeMutableRawPointer?, Int32, UnsafeMutablePointer<UnsafeMutablePointer<Int8>?>?, UnsafeMutablePointer<UnsafeMutablePointer<Int8>?>?) -> Int32)!##((UnsafeMutableRawPointer?, Int32, UnsafeMutablePointer<UnsafeMutablePointer<Int8>?>?, UnsafeMutablePointer<UnsafeMutablePointer<Int8>?>?) -> Int32)!##(UnsafeMutableRawPointer?, Int32, UnsafeMutablePointer<UnsafeMutablePointer<Int8>?>?, UnsafeMutablePointer<UnsafeMutablePointer<Int8>?>?) -> Int32#>, <#T##UnsafeMutableRawPointer!#>, <#T##errmsg: UnsafeMutablePointer<UnsafeMutablePointer<Int8>?>!##UnsafeMutablePointer<UnsafeMutablePointer<Int8>?>!#>)
+////    let columnName = String(cString: sqlite3_column_name(queryStatement, Int32(0)))
+////    let columnText = String(cString: sqlite3_column_text(queryStatement, Int32(0)))
+//
+////    sumAmount = String(cstring: sqlite3_)
+//    return sumAmount
+  }
+
+  
   func spend(amount: NSDecimalNumber, time: Date) {
-    let timeString = String(Int(Date().timeIntervalSince1970))
     let amountString = String(describing: amount.multiplying(by: 100.00))
     let query = """
       INSERT INTO transactions (amount, timestamp)
       VALUES(
       """
       + amountString + """
-      ,
-      """
-      + timeString + """
-      );
+      , datetime('now', 'localtime'));
       """
 //    let database = SQLiteDatabase()
     let status = sqlite3_exec(database, query, nil, nil, nil)
@@ -73,7 +106,7 @@ class DataManager: NSObject {
       CREATE TABLE "transactions" (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           amount INTEGER,
-          timestamp INTEGER
+          timestamp DATE
       );
       CREATE TABLE "daily_budgets" (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
